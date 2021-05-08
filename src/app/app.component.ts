@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Chart } from 'angular-highcharts';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,23 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'dellhackathon';
+  data: any = [1, 2, 3];
+  chart = new Chart({
+    chart: {
+      type: 'line'
+    },
+    title: {
+      text: 'Linechart'
+    },
+    credits: {
+      enabled: false
+    },
+    series: [
+      {
+        name: 'Line 1',
+        type: 'line',
+        data: this.data
+      }
+    ]
+  });
 }
