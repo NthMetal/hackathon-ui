@@ -30,7 +30,10 @@
             "styles": [
               "src/styles.less"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "angular-highcharts"
+            ]
           },
           "configurations": {
             "production": {
