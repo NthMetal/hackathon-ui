@@ -3,13 +3,9 @@ import { CommonModule } from '@angular/common';
 
 import { OxygenSupplyRoutingModule } from './oxygen-supply-routing.module';
 import { OxygenSupplyComponent } from './oxygen-supply.component';
+import { MaterialModule } from '../material.module';
 
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { ChartModule } from 'angular-highcharts';
 
 
 @NgModule({
@@ -18,13 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
   ],
   imports: [
     CommonModule,
+    ChartModule,
     OxygenSupplyRoutingModule,
-    MatCardModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatSortModule,
-    MatButtonModule,
-    MatIconModule
+    MaterialModule
   ]
 })
 export class OxygenSupplyModule { }

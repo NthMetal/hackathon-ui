@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Chart } from 'angular-highcharts';
 import { PlotPackedbubbleOptions, SeriesPackedbubbleOptions } from 'highcharts';
+import { TweetdataService } from '../services/tweetdata.service';
+import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
 import more from 'highcharts/highcharts-more';
-import { TweetdataService } from '../services/tweetdata.service';
 more(Highcharts);
 
 @Component({
@@ -17,46 +17,64 @@ export class HomeComponent implements OnInit {
   
   currentPage = '/'
   cityDataSeries: SeriesPackedbubbleOptions;
-  chart = new Chart({
-    chart: {
-        type: 'packedbubble',
-    },
-    title: {
-        text: 'Untitled'
-    },
-    tooltip: {
-        useHTML: true,
-        pointFormat: '<b>{point.name}:</b> {point.value} tweets'
-    },
-    plotOptions: {
-        packedbubble: {
-            minSize: '50%',
-            maxSize: '500%',
-            layoutAlgorithm: {
-                splitSeries: '',
-                gravitationalConstant: 0.02
-            },
-            dataLabels: {
-                enabled: true,
-                format: '{point.name}',
-                filter: {
-                    property: 'y',
-                    operator: '>',
-                    value: 250
-                },
-                style: {
-                    color: 'black',
-                    textOutline: 'none',
-                    fontWeight: 'normal'
-                }
-            }
-        }
-    },
-    series: []
-  });
+  chart: Chart;
 
   ngOnInit() {
-    const tweetdata = this.tweetDataService.getTweetData();
+    this.tweetDataService.getTweetDataSubject().subscribe(filteredTweetData => {
+      let minSize = '50%';
+      let maxSize = '300%';
+      if(filteredTweetData.length === 1) { maxSize = '100%'; minSize = '10%' }
+      if(filteredTweetData.length === 2) { maxSize = '150%'; minSize = '10%' }
+      this.setPackedBubbleData(filteredTweetData, minSize, maxSize);
+    });
+  }
+
+  initChart(minSize='50%', maxSize='300%') {
+    if (this.chart) this.chart.destroy();
+    this.chart = new Chart({
+      chart: {
+          type: 'packedbubble',
+      },
+      title: {
+          text: 'Untitled'
+      },
+      credits: {
+        enabled: false
+      },
+      tooltip: {
+          useHTML: true,
+          pointFormat: '<b>{point.name}:</b> {point.value} tweets'
+      },
+      plotOptions: {
+          packedbubble: {
+              minSize,
+              maxSize,
+              layoutAlgorithm: {
+                  splitSeries: '',
+                  gravitationalConstant: 0.02
+              },
+              dataLabels: {
+                  enabled: true,
+                  format: '{point.name}',
+                  filter: {
+                      property: 'y',
+                      operator: '>',
+                      value: 250
+                  },
+                  style: {
+                      color: 'black',
+                      textOutline: 'none',
+                      fontWeight: 'normal'
+                  }
+              }
+          }
+      },
+      series: []
+    });
+  }
+
+  setPackedBubbleData(tweetdata, minSize?, maxSize?) {
+    this.initChart(minSize, maxSize);
     const classifiedByCity = tweetdata.reduce((acc, curr) => {
       const city = curr['tweet_cityname'];
       const foundCity = acc.find(item => item.city === city);
@@ -70,15 +88,21 @@ export class HomeComponent implements OnInit {
       }
       return acc;
     }, []);
-    this.cityDataSeries = {
-      name: 'City',
-      type: 'packedbubble',
-      data: classifiedByCity.map(city => ({
+    const series = [];
+    classifiedByCity.forEach(city => {
+      const citySeries: SeriesPackedbubbleOptions = {
         name: city.city,
-        value: city.tweets.length
-      }))
-    }
-    this.chart.addSeries(this.cityDataSeries, true, true);
-    console.log(classifiedByCity);
+        type: 'packedbubble',
+        data: [{
+          name: city.city,
+          value: city.tweets.length
+        }]
+      }
+      series.push(citySeries);
+    });
+    series
+      .sort((a, b) => b.data[0].value - a.data[0].value)
+      .slice(0, 10)
+      .forEach(series => this.chart.addSeries(series, true, true))
   }
 }

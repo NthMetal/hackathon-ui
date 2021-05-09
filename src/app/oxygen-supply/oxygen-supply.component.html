@@ -1,9 +1,26 @@
 <div class="row flex-column">
-    <div class="col mb-3">
-        <button mat-button [routerLink]="['/home']">← Home</button>
+    <div class="col">
+        <ng-container *ngIf="chart">
+            <div [chart]="chart"></div>
+        </ng-container>
     </div>
     <div class="col">
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z5 w-100" matSort>
+        <mat-card class="mat-elevation-z5" *ngIf="treeFilters.length">
+            <div class="row align-items-baseline">
+                <div class="col-auto">
+                    Currently Filtered By: 
+                    <b *ngFor="let filter of treeFilters; let l=last">
+                        {{filter}}{{treeFilters.length > 1 && !l ? ', ' : ''}}
+                    </b>
+                </div>
+                <div class="col">
+                    <button mat-button (click)="removeTreeFilters()">Clear Filters</button>
+                </div>
+            </div>
+        </mat-card>
+    </div>
+    <div class="col mt-3">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z5 w-100" matSort multiTemplateDataRows>
             <ng-container matColumnDef="date">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
                 <td mat-cell *matCellDef="let element"> {{element.date | date: 'MMM dd, yyyy'}} </td>
@@ -39,9 +56,42 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Followers </th>
                 <td mat-cell *matCellDef="let element"> {{element.followers}} </td>
             </ng-container>
+
+            <ng-container matColumnDef="expandedDetail">
+                <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+                  <div class="example-element-detail"
+                       [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+                    <div class="row align-items-baseline w-100">
+                        <div class="col">
+                            <b>Time: </b>{{element.date | date: 'h:mm:ss a z'}}
+                        </div>
+                        <div class="col">
+                            <b>Username: </b>{{element.username}}
+                        </div>
+                        <div class="col">
+                            <b>Location: </b>{{element.location}}
+                        </div>
+                        <div class="col">
+                            <b>Followers: </b>{{element.followers}}
+                        </div>
+                        <div class="col-auto">
+                            <a [href]="element.link" target="_blank">
+                                <button mat-icon-button>
+                                    <mat-icon>link</mat-icon>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
         
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                class="example-element-row"
+                [class.example-expanded-row]="expandedElement === row"
+                (click)="expandedElement = expandedElement === row ? null : row"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
         </table>
     </div>
     <div class="col mt-3">
@@ -49,3 +99,5 @@
     </div>
 </div>
 
+
+{{now.toJSON()}}

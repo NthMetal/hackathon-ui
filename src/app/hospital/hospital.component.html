@@ -1,1 +1,28 @@
-<p>hospital works!</p>
+<div>Temporary Page for setting test data:</div>
+<div>Format must be JSON with the following:</div>
+<div>
+    <pre>
+        {{exampleTweet|json}}
+    </pre>
+</div>
+
+<div class="row flex-column">
+    <div class="col row">
+        <div class="col"><b class="mr-3">Status</b>{{jsonParseResult}}</div>
+        <div class="col-auto">
+            <button mat-flat-button color="warn" (click)="applyChanges()">Apply</button>
+        </div>
+        <div class="col-auto">
+            <button mat-flat-button color="primary" (click)="resetChanges()">Reset</button>
+        </div>
+    </div>
+    <div class="col">
+        <mat-card>
+            <mat-form-field class="w-100" appearance="outline">
+                <mat-label>json</mat-label>
+                <textarea matInput placeholder="[]" style="min-height: 10rem" [(ngModel)]="newJson"></textarea>
+              </mat-form-field>
+        </mat-card>
+    </div>
+</div>
+

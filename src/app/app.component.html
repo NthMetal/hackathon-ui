@@ -1,4 +1,20 @@
-<div class="row m-5">
+<div class="row flex-column m-5">
+  <div class="col row">
+    <div class="col"><button mat-button [routerLink]="['/home']">Home</button></div>
+    <div class="col-auto">
+      <mat-form-field appearance="outline">
+        <mat-label>Filter By Time</mat-label>
+        <mat-select (selectionChange)="filterSelectionChanged($event)" value="">
+          <mat-option value="">All</mat-option>
+          <mat-option value="1">Last 1 Hour</mat-option>
+          <mat-option value="5">Last 5 Hours</mat-option>
+          <mat-option value="24">Last Day</mat-option>
+          <mat-option value="168">Last Week</mat-option>
+          <mat-option value="720">Last Month</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
   <div class="col">
     <router-outlet></router-outlet>
   </div>

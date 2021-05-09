@@ -6,8 +6,7 @@ import { AppComponent } from './app.component';
 
 import { ChartModule } from 'angular-highcharts';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-import { MatCardModule } from '@angular/material/card';
+import { MaterialModule } from './material.module';
 
 
 @NgModule({
@@ -19,7 +18,7 @@ import { MatCardModule } from '@angular/material/card';
     AppRoutingModule,
     ChartModule,
     BrowserAnimationsModule,
-    MatCardModule
+    MaterialModule
   ],
   providers: [],
   bootstrap: [AppComponent]

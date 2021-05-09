@@ -1,4 +1,6 @@
-<div [chart]="chart"></div>
+<ng-container *ngIf="chart">
+    <div [chart]="chart"></div>
+</ng-container>
 
 
 <div class="row justify-content-around">
