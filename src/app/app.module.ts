@@ -5,6 +5,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { ChartModule } from 'angular-highcharts';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
+import { MatCardModule } from '@angular/material/card';
+
 
 @NgModule({
   declarations: [
@@ -13,7 +17,9 @@ import { ChartModule } from 'angular-highcharts';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ChartModule
+    ChartModule,
+    BrowserAnimationsModule,
+    MatCardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

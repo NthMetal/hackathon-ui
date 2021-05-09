@@ -28,6 +28,8 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/bootstrap-css-only/css/bootstrap-grid.min.css",
+              "src/custom-theme.scss",
               "src/styles.less"
             ],
             "scripts": [],
