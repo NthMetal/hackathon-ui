@@ -7,7 +7,7 @@ import { HomeComponent } from './home.component';
 import { ChartModule } from 'angular-highcharts';
 
 import { MatCardModule } from '@angular/material/card';
-
+import { MatButtonModule } from '@angular/material/Button';
 
 @NgModule({
   declarations: [
@@ -17,7 +17,8 @@ import { MatCardModule } from '@angular/material/card';
     CommonModule,
     HomeRoutingModule,
     ChartModule,
-    MatCardModule
+    MatCardModule,
+    MatButtonModule
   ]
 })
 export class HomeModule { }
