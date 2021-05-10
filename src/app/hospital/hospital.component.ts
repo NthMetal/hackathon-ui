@@ -23,7 +23,8 @@ export class HospitalComponent implements OnInit {
     "preds_label": "['cat']"
   }
   newJson;
-  jsonParseResult
+  jsonParseResult;
+  simulationInterval = 5000;
 
   constructor(private tweetDataService: TweetdataService) { }
 
@@ -45,6 +46,10 @@ export class HospitalComponent implements OnInit {
   resetChanges() {
     this.tweetDataService.resetCachedTweetData();
     this.jsonParseResult = 'Data Has Been Reset';
+  }
+
+  setSimulationInterval() {
+    this.tweetDataService.setSimulationInterval(this.simulationInterval);
   }
 
 }

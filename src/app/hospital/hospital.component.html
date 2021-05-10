@@ -8,6 +8,15 @@
 
 <div class="row flex-column">
     <div class="col row">
+        <div class="col-auto">Interval to simulate real data coming in: </div>
+        <div class="col">
+            <mat-form-field class="w-100" appearance="outline">
+                <mat-label>Time (ms)</mat-label>
+                <input matInput type="number" [(ngModel)]="simulationInterval" (keyup)="setSimulationInterval()">
+            </mat-form-field>
+        </div>
+    </div>
+    <div class="col row">
         <div class="col"><b class="mr-3">Status</b>{{jsonParseResult}}</div>
         <div class="col-auto">
             <button mat-flat-button color="warn" (click)="applyChanges()">Apply</button>
@@ -21,8 +30,7 @@
             <mat-form-field class="w-100" appearance="outline">
                 <mat-label>json</mat-label>
                 <textarea matInput placeholder="[]" style="min-height: 10rem" [(ngModel)]="newJson"></textarea>
-              </mat-form-field>
+            </mat-form-field>
         </mat-card>
     </div>
 </div>
-

@@ -6,12 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { TweetdataService } from '../services/tweetdata.service';
 
 import { Chart } from 'angular-highcharts';
-import * as Highcharts from 'highcharts';
-import more from 'highcharts/highcharts-more';
-import Tree from 'highcharts/modules/treemap';
-import { SeriesTreemapOptions } from 'highcharts';
-more(Highcharts);
-Tree(Highcharts)
+import { SeriesTreemapOptions, getOptions } from 'highcharts';
 
 const NO_LABELS = 'No Labels';
 
@@ -37,24 +32,36 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
   now = new Date();
   chart: Chart;
   treeFilters = [];
+  treeData = [];
 
   constructor(private tweetDataService: TweetdataService) { }
 
   ngOnInit(): void {
     this.tweetDataService.getTweetDataSubject().subscribe(filteredTweetData => {
-      const mappedData = filteredTweetData.map(tweet => ({
-        date: new Date(tweet['tweet_date']),
-        text: tweet['tweet_text'],
-        username: tweet['user_name'],
-        location: tweet['tweet_cityname'] + ', ' + tweet['tweet_countryname'],
-        link: `http://twitter.com/${tweet['user_name']}/status/${tweet['tweet_id']}`,
-        followers: +(tweet['user_followers'] || 0),
-        labels: tweet['preds_label'] || []
-      }));
+      const mappedData = this.mapTweets(filteredTweetData);
       this.removeTreeFilters();
       this.setDataSource(mappedData);
       this.setTreemapData(mappedData);
     });
+    this.tweetDataService.getNewTweetObservable().subscribe(newTweets => {
+      const mappedData = this.mapTweets(newTweets);
+      const data = this.dataSource.data;
+      data.unshift(...mappedData);
+      this.dataSource.data = data;
+      if (this.chart) this.updateTreeMapData(mappedData);
+    });
+  }
+
+  mapTweets(tweetdata) {
+    return tweetdata.map(tweet => ({
+      date: new Date(tweet['tweet_date']),
+      text: tweet['tweet_text'],
+      username: tweet['user_name'],
+      location: tweet['tweet_cityname'] + ', ' + tweet['tweet_countryname'],
+      link: `http://twitter.com/${tweet['user_name']}/status/${tweet['tweet_id']}`,
+      followers: +(tweet['user_followers'] || 0),
+      labels: tweet['preds_label'] || []
+    }));
   }
 
   initChart() {
@@ -62,6 +69,7 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
     this.chart = new Chart({
       chart: {
         type: 'treemap',
+        backgroundColor: 'transparent'
       },
       credits: {
         enabled: false
@@ -71,16 +79,15 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
       },
       colorAxis: {
         minColor: '#FFFFFF',
-        maxColor: Highcharts.getOptions().colors[0]
+        maxColor: getOptions().colors[0]
       },
       series: []
     });
   }
 
-  setTreemapData(tweetdata){
-    this.initChart();
-
-    const seriesData = tweetdata.reduce((acc, curr) => {
+  private generateChartSeries(tweetdata, series?) {
+    const initialAcc = series || [ { name: NO_LABELS, value: 0, colorValue: 1 } ];
+    return tweetdata.reduce((acc, curr) => {
       if (curr.labels.length === 0) {
         acc[0].value = acc[0].value + 1;
         return acc;
@@ -100,8 +107,13 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
         });
       }
       return acc;
-    }, [ { name: NO_LABELS, value: 0, colorValue: 1 } ]);
-    console.log(seriesData);
+    }, initialAcc);
+  }
+
+  setTreemapData(tweetdata){
+    this.initChart();
+    const seriesData = this.generateChartSeries(tweetdata);
+    this.treeData = seriesData;
     const series: SeriesTreemapOptions = {
       type: 'treemap',
       layoutAlgorithm: 'squarified',
@@ -118,6 +130,13 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
       data: seriesData
     }
     this.chart.addSeries(series, true, true);
+  }
+
+  updateTreeMapData(tweetdata) {
+    const currentSeries = this.chart.ref.series[0];
+    const seriesData = this.generateChartSeries(tweetdata, this.treeData);
+    this.treeData = seriesData;
+    currentSeries.setData(seriesData);
   }
 
   setDataSource(data) {
