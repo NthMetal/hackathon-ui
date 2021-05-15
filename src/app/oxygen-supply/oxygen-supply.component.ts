@@ -68,7 +68,8 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
       location: tweet.place ? `${tweet.place.name}, ${tweet.place.country}` : 'Missing',
       link: `http://twitter.com/${tweet.user['screen_name']}/status/${tweet['id_str']}`,
       followers: +((tweet.user ? tweet.user.followers_count : '') || 0),
-      labels: tweet['preds_label'] || []
+      labels: tweet['preds_label'] || [],
+      id: tweet.id_str
     }));
   }
 

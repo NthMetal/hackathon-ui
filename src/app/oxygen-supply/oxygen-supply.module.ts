@@ -6,6 +6,7 @@ import { OxygenSupplyComponent } from './oxygen-supply.component';
 import { MaterialModule } from '../material.module';
 
 import { ChartModule } from 'angular-highcharts';
+import { NgxTweetModule } from 'ngx-tweet';
 
 
 @NgModule({
@@ -16,7 +17,8 @@ import { ChartModule } from 'angular-highcharts';
     CommonModule,
     ChartModule,
     OxygenSupplyRoutingModule,
-    MaterialModule
+    MaterialModule,
+    NgxTweetModule
   ]
 })
 export class OxygenSupplyModule { }
