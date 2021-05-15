@@ -41,10 +41,10 @@ export class HomeComponent implements OnInit {
     this.chart = new Chart({
       chart: {
           type: 'packedbubble',
-          backgroundColor: 'transparent'
+          // backgroundColor: 'transparent'
       },
       title: {
-          text: 'Untitled'
+          text: 'Most Frequent Tweet Locations'
       },
       credits: {
         enabled: false
@@ -85,7 +85,7 @@ export class HomeComponent implements OnInit {
     this.wordChart = new Chart({
       chart: {
         type: 'wordcloud',
-        backgroundColor: 'transparent'
+        // backgroundColor: 'transparent'
       },
       credits: {
         enabled: false

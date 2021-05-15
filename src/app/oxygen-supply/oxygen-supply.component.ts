@@ -7,6 +7,7 @@ import { TweetdataService } from '../services/tweetdata.service';
 
 import { Chart } from 'angular-highcharts';
 import { SeriesTreemapOptions, getOptions } from 'highcharts';
+import { DomSanitizer } from '@angular/platform-browser';
 
 const NO_LABELS = 'No Labels';
 
@@ -36,7 +37,8 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
 
   isLoaded = false;
 
-  constructor(private tweetDataService: TweetdataService) { }
+  constructor(private tweetDataService: TweetdataService,
+    private sanitizer: DomSanitizer) { }
 
   ngOnInit(): void {
     this.tweetDataService.loadedSubject.subscribe(loaded => {
@@ -75,13 +77,13 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
     this.chart = new Chart({
       chart: {
         type: 'treemap',
-        backgroundColor: 'transparent'
+        // backgroundColor: 'transparent'
       },
       credits: {
         enabled: false
       },
       title: {
-        text: 'Untitled'
+        text: 'Labels'
       },
       colorAxis: {
         minColor: '#FFFFFF',
@@ -176,6 +178,10 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
   removeTreeFilters() {
     this.treeFilters = [];
     this.dataSource.filter = JSON.stringify(this.treeFilters);
+  }
+
+  getSafeUrl(url) {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 
 }

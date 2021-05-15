@@ -24,7 +24,7 @@ export class HospitalComponent implements OnInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   dataSource = new MatTableDataSource([]);
-  displayedColumns = ['date', 'text'];
+  displayedColumns = ['date', 'text', 'score'];
   expandedElement: any | null;
   searchTerm = '';
 
