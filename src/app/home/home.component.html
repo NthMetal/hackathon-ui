@@ -20,13 +20,15 @@
 
 
 
-<div class="row justify-content-around">
-    <mat-card class="col pl-5" [routerLink]="['/oxygensupply']" style="cursor: pointer;">
-        <button mat-button>Twitter Intents - Provide/Offer Help</button>
+<div class="row mt-3 justify-content-around">
+    <mat-card class="col ml-3 pl-5 mat-elevation-z3">
+        <a href="http://3.238.229.207:5601/goto/5b8290c0eb8da1977c0d8ae0d06ff0ab" target="_blank"><button mat-button>Twitter Intents</button></a>
+    </mat-card>
+    <mat-card class="col ml-3 pl-5 mat-elevation-z3 hover-color" [routerLink]="['/oxygensupply']" style="cursor: pointer;">
+        <button mat-button>Provide/Offer Help</button>
         <img src="../../assets/oxygenCard.png"/>
     </mat-card>
-    <div class="col-3"></div>
-    <mat-card class="col pl-5" [routerLink]="['/hospital']" style="cursor: pointer;">
+    <mat-card class="col ml-3 pl-5 mat-elevation-z3 hover-color" [routerLink]="['/hospital']" style="cursor: pointer;">
         <button mat-button>Twitter Semantic Search</button>
         <img src="../../assets/semanticsearch.png"/>
     </mat-card>
