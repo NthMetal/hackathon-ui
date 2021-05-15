@@ -1,55 +1,70 @@
-import { Component, OnInit } from '@angular/core';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { TweetdataService } from '../services/tweetdata.service';
+
+const NO_LABELS = 'No Labels';
 
 @Component({
   selector: 'app-hospital',
   templateUrl: './hospital.component.html',
-  styleUrls: ['./hospital.component.less']
+  styleUrls: ['./hospital.component.less'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class HospitalComponent implements OnInit {
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
-  exampleTweet = {
-    "": 0,
-    "_id": "6097e336337cfe568d9cbb0f",
-    "tweet_id": 1391384261748461600,
-    "tweet_date": "2021-05-09T16:06:18.543Z",
-    "tweet_text": "3hr old tweet",
-    "user_name": "DrBharatbhushan",
-    "user_location": "Palghar",
-    "user_followers": 126,
-    "retweets": 0,
-    "tweet_cityname": "Mumbai",
-    "tweet_countryname": "India",
-    "preds_label": "['cat']"
-  }
-  newJson;
-  jsonParseResult;
-  simulationInterval = 5000;
+  dataSource = new MatTableDataSource([]);
+  displayedColumns = ['date', 'text'];
+  expandedElement: any | null;
+  searchTerm = '';
 
   constructor(private tweetDataService: TweetdataService) { }
 
   ngOnInit(): void {
   }
 
-  applyChanges() {
-    if (this.newJson) {
-      try {
-        const parsedJSON = JSON.parse(this.newJson);
-        this.tweetDataService.setCachedTweetData(parsedJSON);
-        this.jsonParseResult = 'New Data Applied Successfully';
-      } catch(error) {
-        this.jsonParseResult = error;
+  search() {
+    this.tweetDataService.semanticSearch(this.searchTerm).subscribe(result => {
+      const mappedTweets = this.mapTweets(result);
+      console.log(mappedTweets);
+      this.setDataSource(mappedTweets);
+    });
+  }
+
+  mapTweets(tweetdata) {
+    return tweetdata.map(tweet => ({
+      date: new Date(tweet.created_at),
+      text: tweet.Text,
+      username: tweet.screen_name,
+      link: `http://twitter.com/${tweet.screen_name}/status/${tweet.id_str}`,
+      score: tweet.Score
+    }));
+  }
+
+  setDataSource(data) {
+    this.dataSource = new MatTableDataSource([]);
+    this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.filterPredicate = (_data, filter) => {
+      if (filter === '[]') return true;
+      const parsedFilters = JSON.parse(filter);
+      if (parsedFilters.includes(NO_LABELS) && _data.labels.length === 0) {
+        return true;
+      } else {
+        return parsedFilters.some(filter => _data.labels.includes(filter));
       }
     }
-  }
-
-  resetChanges() {
-    this.tweetDataService.resetCachedTweetData();
-    this.jsonParseResult = 'Data Has Been Reset';
-  }
-
-  setSimulationInterval() {
-    this.tweetDataService.setSimulationInterval(this.simulationInterval);
+    this.dataSource.data = data;
   }
 
 }

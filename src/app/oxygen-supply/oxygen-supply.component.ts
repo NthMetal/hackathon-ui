@@ -34,9 +34,14 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
   treeFilters = [];
   treeData = [];
 
+  isLoaded = false;
+
   constructor(private tweetDataService: TweetdataService) { }
 
   ngOnInit(): void {
+    this.tweetDataService.loadedSubject.subscribe(loaded => {
+      this.isLoaded = loaded;
+    });
     this.tweetDataService.getTweetDataSubject().subscribe(filteredTweetData => {
       const mappedData = this.mapTweets(filteredTweetData);
       this.removeTreeFilters();
@@ -45,6 +50,7 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
     });
     this.tweetDataService.getNewTweetObservable().subscribe(newTweets => {
       const mappedData = this.mapTweets(newTweets);
+      console.log('adding tweets: ', mappedData);
       const data = this.dataSource.data;
       data.unshift(...mappedData);
       this.dataSource.data = data;
@@ -54,12 +60,12 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
 
   mapTweets(tweetdata) {
     return tweetdata.map(tweet => ({
-      date: new Date(tweet['tweet_date']),
-      text: tweet['tweet_text'],
-      username: tweet['user_name'],
-      location: tweet['tweet_cityname'] + ', ' + tweet['tweet_countryname'],
-      link: `http://twitter.com/${tweet['user_name']}/status/${tweet['tweet_id']}`,
-      followers: +(tweet['user_followers'] || 0),
+      date: new Date(tweet['@timestamp']),
+      text: tweet.text,
+      username: tweet.user ? tweet.user.name : 'Missing',
+      location: tweet.place ? `${tweet.place.name}, ${tweet.place.country}` : 'Missing',
+      link: `http://twitter.com/${tweet.user['screen_name']}/status/${tweet['id_str']}`,
+      followers: +((tweet.user ? tweet.user.followers_count : '') || 0),
       labels: tweet['preds_label'] || []
     }));
   }
@@ -87,12 +93,18 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
 
   private generateChartSeries(tweetdata, series?) {
     const initialAcc = series || [ { name: NO_LABELS, value: 0, colorValue: 1 } ];
-    return tweetdata.reduce((acc, curr) => {
+    const chartSeries = tweetdata.reduce((acc, curr) => {
       if (curr.labels.length === 0) {
         acc[0].value = acc[0].value + 1;
         return acc;
       } else {
-        if (typeof curr.labels === 'string') curr.labels = JSON.parse(curr.labels.replace(/\'/g, '"'));
+        if (typeof curr.labels === 'string') {
+          try {
+            curr.labels = JSON.parse(curr.labels.replace(/\'/g, '"'));
+          } catch (error) {
+            curr.labels = curr.labels === 'related' ? [] : [ curr.labels ]
+          }
+        }
         curr.labels.forEach(label => {
           const found = acc.find(item => item.name === label);
           if (found) {
@@ -108,6 +120,7 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
       }
       return acc;
     }, initialAcc);
+    return chartSeries;
   }
 
   setTreemapData(tweetdata){
@@ -143,13 +156,13 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
     this.dataSource = new MatTableDataSource([]);
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
-    this.dataSource.filterPredicate = (data, filter) => {
+    this.dataSource.filterPredicate = (_data, filter) => {
       if (filter === '[]') return true;
       const parsedFilters = JSON.parse(filter);
-      if (parsedFilters.includes(NO_LABELS) && data.labels.length === 0) {
+      if (parsedFilters.includes(NO_LABELS) && _data.labels.length === 0) {
         return true;
       } else {
-        return parsedFilters.some(filter => data.labels.includes(filter));
+        return parsedFilters.some(filter => _data.labels.includes(filter));
       }
     }
     this.dataSource.data = data;

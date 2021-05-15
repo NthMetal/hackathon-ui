@@ -19,12 +19,15 @@ export class HomeComponent implements OnInit {
 
   newSeriesData = [];
 
+  isLoaded = false;
+
   ngOnInit() {
+    this.tweetDataService.loadedSubject.subscribe(loaded => {
+      this.isLoaded = loaded;
+    });
     this.tweetDataService.getTweetDataSubject().subscribe(filteredTweetData => {
-      let minSize = '50%';
-      let maxSize = '300%';
-      if(filteredTweetData.length === 1) { maxSize = '100%'; minSize = '10%' }
-      if(filteredTweetData.length === 2) { maxSize = '150%'; minSize = '10%' }
+      let minSize = '20%';
+      let maxSize = '150%';
       this.setPackedBubbleData(filteredTweetData.slice(0, 100), minSize, maxSize);
       // this.setWordChartData(filteredTweetData);
     });
@@ -96,7 +99,7 @@ export class HomeComponent implements OnInit {
 
   classifyByCity(tweetdata: any[]): {city: string, tweets: any[] }[] {
     return tweetdata.reduce((acc, curr) => {
-      const city = curr['tweet_cityname'];
+      const city = curr.user ? curr.user.location : 'Missing';
       const foundCity = acc.find(item => item.city === city);
       if (foundCity) {
         foundCity.tweets.push(curr);
@@ -134,7 +137,7 @@ export class HomeComponent implements OnInit {
   setWordChartData(tweetdata: any[]) {
     this.initWordChart();
     const allText = tweetdata.reduce((acc, curr) => {
-      acc += curr['tweet_text'] + '\n'
+      acc += curr.text + '\n'
       return acc;
     }, '');
     const lines = allText.split(/[,\. ]+/g);

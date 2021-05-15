@@ -1,13 +1,12 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import * as tweetdataImport from 'src/app/tweetdata2.json';
-let tweetdata = tweetdataImport['default'];
 
 @Injectable({
   providedIn: 'root'
 })
 export class TweetdataService {
-  private cachedTweetData = tweetdata;
+  private cachedTweetData = [];
 
   private filteredTweetDataSubject: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(this.cachedTweetData);
   private filteredTweetData = [];
@@ -16,17 +15,28 @@ export class TweetdataService {
 
   private newTweetSubject: Subject<any[]> = new Subject<any[]>();
 
-  simulationInterval = 5000;
+  simulationInterval = 30000; // 50 sec
   intervalRef;
 
-  constructor() {
-    this.filteredTweetData = this.cachedTweetData;
-    this.filteredTweetDataSubject.next(this.cachedTweetData);
+  loadedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
-    // Simulate getting a new tweet every 5 seconds
-    this.intervalRef = setInterval(() => {
-      this.simulateNewData();
-    }, this.simulationInterval);
+  constructor(private http: HttpClient) {
+    this.getFullData().subscribe(allTweets => {
+      console.log('got all tweetData', allTweets);
+      this.cachedTweetData = allTweets;
+      this.filteredTweetData = this.cachedTweetData;
+      this.filteredTweetDataSubject.next(this.cachedTweetData);
+
+      this.loadedSubject.next(true);
+
+      // Simulate getting a new tweet every 5 seconds
+      this.intervalRef = setInterval(() => {
+        this.get1minData().subscribe(newTweets => {
+          this.addNewTweets(newTweets);
+          // console.log('new tweets: ', newTweets);
+        });
+      }, this.simulationInterval);
+    });
   }
 
   getCurrentTweetData() {
@@ -47,7 +57,7 @@ export class TweetdataService {
     const now = new Date();
     const milliseconds = hours * 60 * 60 * 1000;
     this.filteredTweetData = this.cachedTweetData.filter(tweet => {
-      const tweetDate = new Date(tweet['tweet_date']);
+      const tweetDate = new Date(tweet['@timestamp']);
       const difference = now.getTime() - tweetDate.getTime();
       return difference <= milliseconds
     });
@@ -65,8 +75,7 @@ export class TweetdataService {
   }
 
   resetCachedTweetData() {
-    this.cachedTweetData = tweetdata;
-    this.filteredTweetData = tweetdata;
+    this.filteredTweetData = this.cachedTweetData;
     if (this.filteredByLastHours) {
       this.filterDataByLastHours(this.filteredByLastHours);
     } else {
@@ -79,29 +88,37 @@ export class TweetdataService {
   }
 
   addNewTweets(tweets) {
-    tweetdata.push(...tweets);
-    this.cachedTweetData.push(...tweets);
-    this.filteredTweetData.push(...tweets);
-    this.newTweetSubject.next(tweets);
+    const unique = tweets.filter(tweet => 
+      !this.cachedTweetData.find(existingTweet => existingTweet.id_str === tweet.id_str));
+    this.cachedTweetData.push(...unique);
+    this.filteredTweetData.push(...unique);
+    this.newTweetSubject.next(unique);
   }
 
-  simulateNewData() {
-    const randomTweet = this.cachedTweetData[Math.floor(Math.random() * this.cachedTweetData.length)]
-    // const testcityname = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c0'][Math.floor(Math.random() * 10)]
-    // randomTweet['tweet_cityname'] = testcityname;
-    randomTweet['tweet_date'] = new Date();
-    randomTweet['preds_label'] = [['c1', 'c2', 'c3'], ['c1', 'c2', 'c6'], ['c1', 'c6', 'c9', 'c0']][Math.floor(Math.random() * 3)];
-    this.addNewTweets([randomTweet]);
-    console.log('adding new tweet', randomTweet);
+  getFullData(): Observable<any> {
+    return this.http.post('http://3.238.229.207:5001/get_fulldata', {}, {
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
   }
 
-  setSimulationInterval(newSimulationInterval) {
-    this.simulationInterval = newSimulationInterval;
-    console.log('new interval: ', this.simulationInterval);
-    clearInterval(this.intervalRef);
-    this.intervalRef = setInterval(() => {
-      this.simulateNewData();
-    }, this.simulationInterval);
+  get1minData(): Observable<any> {
+    return this.http.post('http://3.238.229.207:5001/get_last1mindata', {}, {
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
+  }
+
+  semanticSearch(search): Observable<any> {
+    const formData = new FormData();
+    formData.append('userquery', search);
+    return this.http.post('http://3.238.229.207:5001/semantic_search', formData, {
+      headers: {
+        'Access-Control-Allow-Origin': '*'
+      }
+    })
   }
   
 }
