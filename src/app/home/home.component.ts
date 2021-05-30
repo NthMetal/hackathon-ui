@@ -490,7 +490,7 @@ export class HomeComponent implements OnInit {
 
   hideEverything() {
     this.showEverything = false;
-    const svg = d3.select("#graph").select('svg').remove();
+    d3.select("#graph").remove();
     this.createTweetLinkGraph(this.filteredTweetData);
   }
 }
