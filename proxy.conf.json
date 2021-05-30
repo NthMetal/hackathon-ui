@@ -1,0 +1,10 @@
+{
+    "/http://3.238.229.207:5001": {
+        "target": "http://3.238.229.207:5001",
+        "secure": false,
+        "changeOrigin": true,
+        "pathRewrite": {
+            "http://3.238.229.207:5001": ""
+        }
+    }
+}

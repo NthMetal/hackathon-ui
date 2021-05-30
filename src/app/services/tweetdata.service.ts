@@ -1,6 +1,37 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Apollo, gql } from 'apollo-angular';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
+
+const FIND_ALL = gql`
+query{
+  networks{
+    idstr
+    datetime
+    text
+    username
+    userlocation
+    preds
+  }
+}
+`;
+
+const FIND_INTENTS = gql`
+query{
+  intents{
+    Syncons
+    Topics
+    Knowledge
+    Lemma
+    Phrase
+    EmotionalTraits
+    IPTCMediaTopics
+  }
+}
+`;
+// namedentities
+// categories
+
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +51,8 @@ export class TweetdataService {
 
   loadedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient,
+    private apollo: Apollo) {
     this.getFullData().subscribe(allTweets => {
       console.log('got all tweetData', allTweets);
       this.cachedTweetData = allTweets;
@@ -30,12 +62,12 @@ export class TweetdataService {
       this.loadedSubject.next(true);
 
       // Simulate getting a new tweet every 5 seconds
-      this.intervalRef = setInterval(() => {
-        this.get1minData().subscribe(newTweets => {
-          this.addNewTweets(newTweets);
-          // console.log('new tweets: ', newTweets);
-        });
-      }, this.simulationInterval);
+      // this.intervalRef = setInterval(() => {
+      //   this.get1minData().subscribe(newTweets => {
+      //     this.addNewTweets(newTweets);
+      //     // console.log('new tweets: ', newTweets);
+      //   });
+      // }, this.simulationInterval);
     });
   }
 
@@ -96,11 +128,34 @@ export class TweetdataService {
   }
 
   getFullData(): Observable<any> {
-    return this.http.post('http://3.238.229.207:5001/get_fulldata', {}, {
-      headers: {
-        'Access-Control-Allow-Origin': '*'
-      }
+    return new Observable(subscribe => {
+        this.apollo
+      .watchQuery({
+        query: FIND_ALL,
+      })
+      .valueChanges.subscribe(({ data, loading }) => {
+        subscribe.next((data as any).networks);
+        subscribe.complete();
+      });
+    });
+    // return this.http.post('http://3.238.229.207:5001/get_fulldata', {}, {
+    //   headers: {
+    //     'Access-Control-Allow-Origin': '*'
+    //   }
+    // })
+  }
+
+  getIntents(): Observable<any> {
+    return new Observable(subscribe => {
+      this.apollo
+    .watchQuery({
+      query: FIND_INTENTS,
     })
+    .valueChanges.subscribe(({ data, loading }) => {
+      subscribe.next((data as any).intents);
+      subscribe.complete();
+    });
+  });
   }
 
   get1minData(): Observable<any> {

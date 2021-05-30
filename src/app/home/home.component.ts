@@ -3,72 +3,7 @@ import { SeriesPackedbubbleOptions, SeriesWordcloudOptions } from 'highcharts';
 import { TweetdataService } from '../services/tweetdata.service';
 import { Chart } from 'angular-highcharts';
 import * as d3 from 'd3';
-
-const tweetdata = { 
-  "keyelements": [
-    ["Mahabubnagar Telangan RT", 7.9],
-    ["ICU", 7.09],
-    ["injection", 6.4],
-    ["patient", 4.09],
-    ["Gurgaon", 3.7],
-    ["friend", 3.7],
-    ["Kaushik Sikdar", 3.5],
-    ["Remdesivir", 3.5]
-  ], 
-  "namedentities": { 
-    "Administrative geographic areas": [
-      "Patiente", 
-      "Miyapur", 
-      "Bhutan", 
-      "Calcutta", 
-      "Chennai", 
-      "United States of America", 
-      "Bangalore", 
-      "Varanasi", 
-      "Hyderabad", 
-      "Vijayawada", 
-      "Bhubaneswar", 
-      "Coimbatore", 
-      "Mysore", 
-      "Patna", 
-      "Gurgaon", 
-      "Kakinada"
-    ], 
-    "Building": ["ICU"], 
-    "Businesses / companies": ["Telef\u00f3nica O2 Europe"], 
-    "Humans": [
-      "Jake", 
-      "Edwina", 
-      "Abu IsRael", 
-      "Maami", 
-      "Tharoor", 
-      "Mountbatten", 
-      "Tocillizumab", 
-      "Kaushik Sikdar", 
-      "Other Blue Lol", 
-      "Sonu", 
-      "Johnson", 
-      "Prabir", 
-      "Nand La Very",
-      "Very Urgent", 
-      "Murali KrishnaAge",
-      "Urgentur Friend Arya Mani"
-    ], 
-    "Money": ["3 dollar"], 
-    "Organizations / societies / institutions": ["Mahabubnagar Telangan RT", "Contact N They", "ACTEMRA", "TOCILIZUMAB"], 
-    "Phone number": ["6352771379", "+91 7021402080"], 
-    "Physical phenomena": ["Lungs Infection", "COVID-19"], 
-    "Product": ["WE ARE TRYING TO Need", "ventilatorsI", "mucormycosisPatient", "Remdesivir", "UNeed Remdesivir"], 
-    "Proper noun": ["GujaratYebin", "helpLocation", "sirMy", "LIPOSOMAL", "Tikamda", "iCU", "Mahabubnagar Telangana", "aND wE dEsperately nEEd oXyGen", "iN", "tO", "sto wE", "High Fl Please", "Baraut Bhagpat Uttar Pradesh", "Remdesivir Inj", "Gandhi HOSIPITAL BED", "NEED ICU BED IN VIZAGSPO2", "GOI", "Thats", "Lalbagh", "requirementPatient", "sirPatient", "Thankyou", "The Heart of No Need", "Cont Need ICU BED", "hyderabadPlease", "BeckhamWe", "Bhagpat", "Sheilds", "N95", "Add Please", "BED", "Need Remdesivir", "Bhatinda", "Pathankot", "87Reqirment", "SpO2:85", "BVS", "Visakhapatnam"], 
-    "Web address": ["Chennai.Urgently.If"] 
-  }, 
-  "categories": [
-    ["20000457", "Medical conditions", 21.92],
-    ["20000462", "Hospital and clinic", 17.53],
-    ["20000478", "Therapy", 5.82],
-    ["20000787", "Parent and child", 4.46]
-  ] 
-}
+import { Apollo, gql } from 'apollo-angular';
 
 @Component({
   selector: 'app-home',
@@ -92,6 +27,8 @@ export class HomeComponent implements OnInit {
   width = 800;
   height = 800;
   margin = 0;
+  showEverything = true;
+  filteredTweetData = [];
 
   ngOnInit() {
     this.tweetDataService.loadedSubject.subscribe(loaded => {
@@ -100,47 +37,53 @@ export class HomeComponent implements OnInit {
     this.tweetDataService.getTweetDataSubject().subscribe(filteredTweetData => {
       let minSize = '20%';
       let maxSize = '150%';
-      this.setPackedBubbleData(filteredTweetData.slice(0, 100), minSize, maxSize);
-      // this.setWordChartData(filteredTweetData);
+      this.filteredTweetData = filteredTweetData;
+    });
+    this.tweetDataService.getIntents().subscribe(intentsData => {
+      const parsedData = intentsData[0];
+      this.createIntetnsLinkGraph(parsedData);
     });
     this.tweetDataService.getNewTweetObservable().subscribe(newTweets => {
       if (this.chart) this.updatePackedBubbleData(newTweets);
     });
-    this.createLinkGraph();
-
   }
 
-  createLinkGraph() {
-    console.log('creating likn graph')
+  createIntetnsLinkGraph(intentsdata) {
+    if(!intentsdata) return;
+    console.log(intentsdata);
     const force = d3.layout.force()
-      .charge(-200).linkDistance(30).size([this.width, this.height]);
+      .charge(-150)
+      .chargeDistance(200)
+      .linkDistance(50)
+      .size([this.width, this.height]);
+
+    
     const svg = d3.select("#graph").append("svg")
       .attr("width", "100%").attr("height", "100%")
       .attr("pointer-events", "all");
     const graphData = { links: [], nodes: [] };
-
     // GENERATE NODES
     let lastKeyItemIndex = 0;
-    Object.keys(tweetdata).forEach(key => {
-      if(Array.isArray(tweetdata[key])) {
-        tweetdata[key].forEach(item => {
-          const itemName = isNaN(+item[0]) ? item[0] : item[1];
-          graphData.nodes.push({ label: key, title: itemName })
+    Object.keys(intentsdata).forEach(key => {
+      if(Array.isArray(intentsdata[key])) {
+        intentsdata[key].forEach(item => {
+          const itemName = item // isNaN(+item[0]) ? item[0] : item[1];
+          graphData.nodes.push({ label: key, title: itemName, connections: 1 })
           graphData.links.push({
             source: lastKeyItemIndex,
             target: graphData.nodes.length - 1
           });
           lastKeyItemIndex = graphData.nodes.length - 1;
         });
-      } else {
-        Object.keys(tweetdata[key]).forEach(item => {
-          graphData.nodes.push({ label: key, title: item })
+      } else if (key !== '__typename') {
+        Object.keys(intentsdata[key]).forEach(item => {
+          graphData.nodes.push({ label: key, title: item, connections: 1 })
           graphData.links.push({
             source: lastKeyItemIndex,
             target: graphData.nodes.length - 1
           });
           lastKeyItemIndex = graphData.nodes.length - 1;
-          graphData.nodes.push(...tweetdata[key][item].map(str => ({ label: key, title: str, parent: item })))
+          graphData.nodes.push(...intentsdata[key][item].map(str => ({ label: key, title: str, parent: item })))
         })
       }
     })
@@ -149,10 +92,87 @@ export class HomeComponent implements OnInit {
     graphData.nodes.forEach((node, sourceIndex) => {
       graphData.nodes.forEach((_node, targetIndex) => {
         if (
-          node.title === _node.title ||
-          node.parent === _node.title
+          (node.title === _node.title ||
+          node.label === _node.label) && node.connections < 2
         ) {
             if (sourceIndex !== targetIndex) { 
+              node.connections = node.connections ? node.connections + 1 : 1;
+              _node.connections = _node.connections ? _node.connections + 1 : 1;
+              graphData.links.push(({ 
+                target: targetIndex, 
+                source: sourceIndex
+              }));
+            }
+        }
+      });
+    });
+
+    console.log(graphData);
+    this.drawIntetsGraphData(force, svg, graphData);
+  }
+
+  createTweetLinkGraph(tweetdata) {
+    if (!tweetdata || !tweetdata.length) return;
+    console.log('creating likn graph');
+    const force = d3.layout.force()
+      .charge(-150)
+      .chargeDistance(200)
+      .linkDistance(50)
+      .size([this.width, this.height]);
+
+    
+    const svg = d3.select("#graph2").append("svg")
+      .attr("width", "100%").attr("height", "100%")
+      .attr("pointer-events", "all");
+    const graphData = { links: [], nodes: [] };
+
+    // GENERATE NODES
+    graphData.nodes = tweetdata.map(tweet => ({
+      username: tweet.username,
+      preds: tweet.preds,
+      userlocation: tweet.userlocation,
+      link: `http://twitter.com/${tweet.username}/status/${tweet.idstr}`,
+      connections: 0
+    }))
+
+    console.log(...[...new Set(tweetdata.map(tweet => tweet.preds))])
+
+    // city: "Missing"
+    // country: "Missing"
+    // idstr: "1393595689989414914"
+    // retweetcount: 0
+    // text: "\"The dead bodies shown floating in Ganga is the footage of Nigeria not India.\" \n\n~ Life Changing Quotes\n    by Kangna Runout"
+    // userfollowercount: 2415
+    // __typename: "User"
+
+    // GENERATE LINKS
+    graphData.nodes.forEach((node, sourceIndex) => {
+      graphData.nodes.forEach((_node, targetIndex) => {
+        if (
+          (
+            node.username === _node.username ||
+            node.preds === _node.preds
+            )
+          && node.connections < 1
+        ) {
+            if (sourceIndex !== targetIndex) {
+              node.connections = node.connections ? node.connections + 1 : 1;
+              _node.connections = _node.connections ? _node.connections + 1 : 1;
+              graphData.links.push(({ 
+                target: targetIndex, 
+                source: sourceIndex
+              }));
+            }
+        }
+      });
+    });
+    graphData.nodes.forEach((node, sourceIndex) => {
+      graphData.nodes.forEach((_node, targetIndex) => {
+        if (
+          node.userlocation === _node.userlocation &&
+          node.connections > 1 && _node.connections > 1
+        ) {
+            if (sourceIndex !== targetIndex) {
               graphData.links.push(({ 
                 target: targetIndex, 
                 source: sourceIndex
@@ -162,12 +182,13 @@ export class HomeComponent implements OnInit {
       });
     });
     console.log(graphData);
-    this.drawGraphData(force, svg, graphData)
+    this.drawTweetGraphData(force, svg, graphData)
   }
 
-  drawGraphData(force, svg, graph: { links: any[], nodes: any[] }) {
-    console.log(graph.nodes);
+  drawTweetGraphData(force, svg, graph: { links: any[], nodes: any[] }) {
     force.nodes(graph.nodes).links(graph.links).start();
+
+    const radius = 10;
 
     const link = svg.selectAll(".link")
       .data(graph.links).enter()
@@ -178,12 +199,12 @@ export class HomeComponent implements OnInit {
       .append("circle")
       .attr("class", d => {
         return "node " + d.label
-      })
+      }).attr("fill", d => {return this.string2RGB(d.preds)})
       // .attr("r", d => Math.floor(Math.random() * 20) + 10)
-      .attr("r", d => 10)
+      .attr("r", d => radius)
       .call(force.drag)
-      .on("click", (item, event) => {
-        console.log(item, event);
+      .on("click", (item, index) => {
+        window.open(item.link, '_blank');
       });
       // .on("mouseover", handleMouseOver)
       // .on("mouseout", handleMouseOut);
@@ -191,7 +212,7 @@ export class HomeComponent implements OnInit {
     // html title attribute
     node.append("title")
       .text(d => {
-        return d.title;
+        return d.preds;
       });
 
     // force feed algo ticks
@@ -207,11 +228,73 @@ export class HomeComponent implements OnInit {
       });
 
       node.attr("cx", d => {
-        return d.x;
+        return Math.max(radius, Math.min((window.innerWidth - 17) - radius, d.x));
       }).attr("cy", d => {
-        return d.y;
+        return Math.max(radius, Math.min((window.innerHeight) - radius, d.y));
       });
     });
+  }
+
+  drawIntetsGraphData(force, svg, graph: { links: any[], nodes: any[] }) {
+    force.nodes(graph.nodes).links(graph.links).start();
+
+    const radius = 10;
+
+    const link = svg.selectAll(".link")
+      .data(graph.links).enter()
+      .append("line").attr("class", "link");
+
+    const node = svg.selectAll(".node")
+      .data(graph.nodes).enter()
+      .append("circle")
+      .attr("class", d => {
+        return "node " + d.label
+      }).attr("fill", d => {return this.string2RGB(d.label)})
+      // .attr("r", d => Math.floor(Math.random() * 20) + 10)
+      .attr("r", d => radius)
+      .call(force.drag)
+      .on("click", (item, index) => {
+        console.log(item);
+      });
+      // .on("mouseover", handleMouseOver)
+      // .on("mouseout", handleMouseOut);
+
+    // html title attribute
+    node.append("title")
+      .text(d => {
+        return d.label + ': ' + d.title;
+      });
+
+    // force feed algo ticks
+    force.on("tick", () => {
+      link.attr("x1", d => {
+        return d.source.x;
+      }).attr("y1", d => {
+        return d.source.y;
+      }).attr("x2", d => {
+        return d.target.x;
+      }).attr("y2", d => {
+        return d.target.y;
+      });
+
+      node.attr("cx", d => {
+        return Math.max(radius, Math.min((window.innerWidth - 17) - radius, d.x));
+      }).attr("cy", d => {
+        return Math.max(radius, Math.min((window.innerHeight) - radius, d.y));
+      });
+    });
+  }
+
+  string2RGB(string): string {
+    var hash = 0;
+    for (var i = 0; i < string.length; i++) {
+       hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    var c = (hash & 0x00FFFFFF)
+        .toString(16)
+        .toUpperCase();
+  
+    return '#' + ('00000'.substring(0, 6 - c.length) + c);
   }
 
 
@@ -403,5 +486,11 @@ export class HomeComponent implements OnInit {
     // [0].name
     // console.log(this.chart.ref.series[0].name);
     // this.chart.ref.series[0].setData([], true, true)
+  }
+
+  hideEverything() {
+    this.showEverything = false;
+    const svg = d3.select("#graph").select('svg').remove();
+    this.createTweetLinkGraph(this.filteredTweetData);
   }
 }

@@ -1,11 +1,11 @@
 <div class="row flex-column m-5">
-  <div class="col row">
-    <div class="col-auto"><button mat-button [routerLink]="['/home']">Home</button></div>
+  <div class="col row" style="z-index: 1;">
+    <div class="col-auto"><button mat-button [routerLink]="['/home']" (click)="refreshPage()">Home</button></div>
     <div class="col">
       <h1>COVID19 Helper</h1>
     </div>
     <div class="col-auto">
-      <mat-form-field appearance="outline">
+      <!-- <mat-form-field appearance="outline">
         <mat-label>Filter By Time</mat-label>
         <mat-select (selectionChange)="filterSelectionChanged($event)" value="">
           <mat-option value="">All</mat-option>
@@ -15,10 +15,12 @@
           <mat-option value="168">Last Week</mat-option>
           <mat-option value="720">Last Month</mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
     </div>
   </div>
-  <div class="col">
+  <div class="col" *ngIf="refresh">
     <router-outlet></router-outlet>
   </div>
 </div>
+
+<div class="background"></div>

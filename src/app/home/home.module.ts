@@ -6,6 +6,7 @@ import { HomeComponent } from './home.component';
 
 import { ChartModule } from 'angular-highcharts';
 import { MaterialModule } from '../material.module';
+import { GraphQLModule } from '../graphql.module';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { MaterialModule } from '../material.module';
     CommonModule,
     HomeRoutingModule,
     ChartModule,
-    MaterialModule
+    MaterialModule,
+    GraphQLModule
   ]
 })
 export class HomeModule { }

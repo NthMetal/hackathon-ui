@@ -19,11 +19,20 @@ treemap(Highcharts);
 })
 export class AppComponent {
 
+  refresh = true;
+
   constructor(private tweetDataService: TweetdataService) {}
 
 
   filterSelectionChanged(event) {
     this.tweetDataService.filterDataByLastHours(+event.value);
+  }
+
+  refreshPage() {
+    this.refresh = false;
+    setTimeout(() => {
+      this.refresh = true;
+    });
   }
 
 }

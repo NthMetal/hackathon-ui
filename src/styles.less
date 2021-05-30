@@ -2,7 +2,6 @@
 
 html, body { 
     height: 100%;
-    // background-color: #ffffff;
 }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
@@ -13,8 +12,20 @@ a:hover { text-decoration: underline; }
     width: 100%;
 }
 
-.node { stroke: #222; stroke-width: 1.5px; }
-.node.categories { fill: #444; }
-.node.namedentities { fill: #888; }
-.node.keyelements { fill: #BBB; }
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image: url('https://wallpapercave.com/wp/wp3571868.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-blend-mode: multiply;
+}
+
+.node { stroke: #222; stroke-width: 1.5px; cursor: pointer; }
+.node:hover { stroke: blue; stroke-width: 3px; }
 .link { stroke: #999; stroke-opacity: .6; stroke-width: 1px; }
