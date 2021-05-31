@@ -115,7 +115,7 @@ export class HomeComponent implements OnInit {
     if (!tweetdata || !tweetdata.length) return;
     console.log('creating likn graph');
     const force = d3.layout.force()
-      .charge(-150)
+      .charge(-250)
       .chargeDistance(200)
       .linkDistance(50)
       .size([this.width, this.height]);
@@ -131,7 +131,7 @@ export class HomeComponent implements OnInit {
       username: tweet.username,
       preds: tweet.preds,
       userlocation: tweet.userlocation,
-      link: `http://twitter.com/${tweet.username}/status/${tweet.idstr}`,
+      link: `http://twitter.com/_/status/${tweet.idstr}`,
       connections: 0
     }))
 
@@ -194,9 +194,13 @@ export class HomeComponent implements OnInit {
       .data(graph.links).enter()
       .append("line").attr("class", "link");
 
-    const node = svg.selectAll(".node")
-      .data(graph.nodes).enter()
-      .append("circle")
+      const group = svg.append("g")
+      .attr("class", "nodes")
+    .selectAll("g")
+    .data(graph.nodes)
+    .enter().append("g")
+
+    const node = group.append("circle")
       .attr("class", d => {
         return "node " + d.label
       }).attr("fill", d => {return this.string2RGB(d.preds)})
@@ -208,11 +212,15 @@ export class HomeComponent implements OnInit {
       });
       // .on("mouseover", handleMouseOver)
       // .on("mouseout", handleMouseOut);
+      const text = group.append('text')
+      .text(function(d) {
+        return d.userlocation;
+      })
 
     // html title attribute
-    node.append("title")
+    group.append("title")
       .text(d => {
-        return d.preds;
+        return `[${d.preds}] from: ${d.userlocation}`;
       });
 
     // force feed algo ticks
@@ -226,6 +234,9 @@ export class HomeComponent implements OnInit {
       }).attr("y2", d => {
         return d.target.y;
       });
+
+      text.attr('x', d => d.x + 10)
+      .attr('y', d => d.y + 5);
 
       node.attr("cx", d => {
         return Math.max(radius, Math.min((window.innerWidth - 17) - radius, d.x));
@@ -244,9 +255,13 @@ export class HomeComponent implements OnInit {
       .data(graph.links).enter()
       .append("line").attr("class", "link");
 
-    const node = svg.selectAll(".node")
-      .data(graph.nodes).enter()
-      .append("circle")
+    const group = svg.append("g")
+        .attr("class", "nodes")
+      .selectAll("g")
+      .data(graph.nodes)
+      .enter().append("g")
+
+    const node = group.append("circle")
       .attr("class", d => {
         return "node " + d.label
       }).attr("fill", d => {return this.string2RGB(d.label)})
@@ -256,13 +271,19 @@ export class HomeComponent implements OnInit {
       .on("click", (item, index) => {
         console.log(item);
       });
+    
+    const text = group.append('text')
+      .text(function(d) {
+        return d.title;
+      })
+
       // .on("mouseover", handleMouseOver)
       // .on("mouseout", handleMouseOut);
 
     // html title attribute
-    node.append("title")
+    group.append("title")
       .text(d => {
-        return d.label + ': ' + d.title;
+        return d.label;
       });
 
     // force feed algo ticks
@@ -276,6 +297,9 @@ export class HomeComponent implements OnInit {
       }).attr("y2", d => {
         return d.target.y;
       });
+
+      text.attr('x', d => d.x + 10)
+      .attr('y', d => d.y + 5);
 
       node.attr("cx", d => {
         return Math.max(radius, Math.min((window.innerWidth - 17) - radius, d.x));

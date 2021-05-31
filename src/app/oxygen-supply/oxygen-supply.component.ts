@@ -62,11 +62,11 @@ export class OxygenSupplyComponent implements OnInit, AfterViewInit {
 
   mapTweets(tweetdata) {
     return tweetdata.map(tweet => ({
-      date: new Date(tweet['@timestamp']),
+      date: new Date(tweet.datetime),
       text: tweet.text,
       username: tweet.username || 'Missing',
       location: tweet.country + ', ' + tweet.city,
-      link: `http://twitter.com/${tweet.username}/status/${tweet.idstr}`,
+      link: `http://twitter.com/_/status/${tweet.idstr}`,
       followers: tweet.userfollowercount,
       labels: tweet.preds as string,
       id: tweet.id_str

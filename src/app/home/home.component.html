@@ -22,10 +22,10 @@
 
 
 
-<div class="row mt-3 justify-content-around" *ngIf="showEverything">
+<div class="row mt-3 justify-content-around card-selectors" *ngIf="showEverything">
     <mat-card class="col ml-3 pl-5 mat-elevation-z3">
         <!-- <a href="http://3.238.229.207:5601/goto/5b8290c0eb8da1977c0d8ae0d06ff0ab" target="_blank"><button mat-button>Twitter Intents</button></a> -->
-       <button mat-button (click)="hideEverything()">Network Graph</button>
+       <button mat-button (click)="hideEverything()">Twitter Network Intents</button>
     </mat-card>
     <mat-card class="col ml-3 pl-5 mat-elevation-z3">
         <button mat-button [routerLink]="['/oxygensupply']">Provide/Offer Help</button>
