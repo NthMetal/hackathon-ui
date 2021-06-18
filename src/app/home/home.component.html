@@ -1,40 +1,19 @@
-<div id="graph2" class="graph-container"></div>
-<div id="graph" class="graph-container"></div>
-
-<div class="row" *ngIf="showEverything">
-    <!-- <div class="col">
-        <ng-container *ngIf="wordChart">
-            <div [chart]="wordChart"></div>
-        </ng-container>
-    </div> -->
-    <div class="col"></div>
-    
-    <div class="col-auto" *ngIf="!isLoaded">
-        <mat-spinner></mat-spinner>
+<div class="row align-items-center">
+    <div class="col">
+        <mat-form-field class="w-100" appearance="outline">
+          <mat-label>Search</mat-label>
+          <input matInput [(ngModel)]="searchTerm">
+        </mat-form-field>
     </div>
-    <div class="col-auto" *ngIf="isLoaded">
-        <ng-container *ngIf="chart">
-            <!-- <div [chart]="chart"></div> -->
-        </ng-container>
+    <div class="col-auto">
+        <button mat-flat-button color="primary" (click)="search()" [disabled]="searchTerm.length === 0"><mat-icon>search</mat-icon></button>
     </div>
-    <div class="col"></div>
 </div>
 
-
-
-<div class="row mt-3 justify-content-around card-selectors" *ngIf="showEverything">
-    <mat-card class="col ml-3 pl-5 mat-elevation-z3">
-        <!-- <a href="http://3.238.229.207:5601/goto/5b8290c0eb8da1977c0d8ae0d06ff0ab" target="_blank"><button mat-button>Twitter Intents</button></a> -->
-       <button mat-button (click)="hideEverything()">Twitter Network Intents</button>
-    </mat-card>
-    <mat-card class="col ml-3 pl-5 mat-elevation-z3">
-        <button mat-button [routerLink]="['/oxygensupply']">Provide/Offer Help</button>
-        <!-- <img src="../../assets/oxygenCard.png"/> -->
-    </mat-card>
-    <mat-card class="col ml-3 pl-5 mat-elevation-z3">
-        <button mat-button [routerLink]="['/hospital']">Twitter Semantic Search</button>
-        <!-- <img src="../../assets/semanticsearch.png"/> -->
-    </mat-card>
+<div class="row">
+    {{intents | json}}
 </div>
 
-<div class="graph-spacing" *ngIf="showEverything"></div>
+<div class="row">
+    {{tweets | json}}
+</div>
